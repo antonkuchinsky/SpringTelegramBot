@@ -105,9 +105,9 @@ public Bot(BotConfig CONFIG){
                         return "Ваша зарплата за месяц " + 0 + " руб.";
                     }
                 case "Посмотреть месячную зарплату":
-botState=State.WAITING_FOR_MONTH_SALARY;
-sendMessage(chatId,"Введите месяц и год за который хотите посмотерть месячную зарплату \nПример: 02-2023");
-break;
+                    botState=State.WAITING_FOR_MONTH_SALARY;
+                    sendMessage(chatId,"Введите месяц и год за который хотите посмотерть месячную зарплату \nПример: 02-2023");
+                    break;
                 default:
                     return "Неизвестная команда. Введите /start для получения списка доступных команд.";
 
@@ -115,55 +115,71 @@ break;
             }
             return "Введите значение:";
         }
-        if(botState==State.WAITING_FOR_MESSAGE) {
-            if (incomeRepository.findByChatIdAndDate(chatId, today).isEmpty()) {
-            try {
-                    double income = Double.parseDouble(message.getText());
-                    double tax = income * 0.13;
-                    income -= tax;
-                    botState = State.ON_WORK;
-                    if (today.getDayOfMonth() <= 15) {
-                        addIncome(chatId, income, today);
-                        addAdvance(chatId, income, today);
-                        sendMessage(chatId, "Сумма " + (income) + " руб. была зачислена в ваш аванс.");
-                    } else {
-                        addIncome(chatId, income, today);
-                        addSalary(chatId, income, today);
-                        sendMessage(chatId, "Сумма " + (income) + " руб. была зачислена в вашу зарплату.");
-                        if (today.getMonth().getValue() == today.getMonth().maxLength()) {
-                            double advance=advanceRepository.getAdvanceByChatId(chatId,today.getYear(),today.getMonthValue());
-                            double salary=salaryRepository.getSalaryByChatId(chatId,today.getYear(),today.getMonthValue());
-                            addMonthSalary(chatId,advance+salary,today.getMonthValue(),today.getYear());
-                            return "Ваша месячная запралата за этот месяц составила:"+monthSalaryRepository.getMonthSalaryByChatId(chatId,today.getYear(),today.getMonthValue())+" руб.";
+        switch(botState){
+            case WAITING_FOR_MESSAGE:
+                if (incomeRepository.findByChatIdAndDate(chatId, today).isEmpty()) {
+                    try {
+                        double income = Double.parseDouble(message.getText());
+                        double tax = income * 0.13;
+                        income -= tax;
+                        botState = State.ON_WORK;
+                        if (today.getDayOfMonth() <= 15) {
+                            addIncome(chatId, income, today);
+                            addAdvance(chatId, income, today);
+                            sendMessage(chatId, "Сумма " + (income) + " руб. была зачислена в ваш аванс.");
+                        } else {
+                            addIncome(chatId, income, today);
+                            addSalary(chatId, income, today);
+                            sendMessage(chatId, "Сумма " + (income) + " руб. была зачислена в вашу зарплату.");
+                            if (today.getDayOfMonth() >= 25) {
+                                botState = State.WAITING_FOR_ADD_MONTH_SALARY;
+                                return "Это ваш последний доход за этот месяц?\nВведите:Да/Нет";
+                            }
+                            else{
+                                return "Доход "+ (income) +" руб. был успешно добавлен";
+                            }
                         }
+                    } catch (NumberFormatException e) {
+                        SendMessage errorMessage = new SendMessage();
+                        errorMessage.setChatId(chatId);
+                        errorMessage.setText("Неверный формат команды. Пожалуйста введите число.");
+                        execute(errorMessage);
                     }
-                    return "Доход в размере " + income + " руб. был успешно добавлен.";
-                } catch(NumberFormatException e){
-                    SendMessage errorMessage = new SendMessage();
-                    errorMessage.setChatId(chatId);
-                    errorMessage.setText("Неверный формат команды. Пожалуйста введите число.");
-                    execute(errorMessage);
                 }
-            }
-            else{
+                else{
+                    botState=State.ON_WORK;
+                    return "Вы уже ввели доход за сегодня.";
+                }
+            case WAITING_FOR_MONTH_SALARY:
+                try {
+                    botState=State.ON_WORK;
+                    String[] commandParts = command.split("-");
+                    int month = Integer.parseInt(commandParts[0]);
+                    int year = Integer.parseInt(commandParts[1]);
+                    return "Ваша зарплата за месяц: " + monthSalaryRepository.getMonthSalaryByChatId(chatId, year, month) + " руб.";
+                }
+                catch (Exception ex){
+                    botState=State.ON_WORK;
+                    return "Проверьте данные, у вас нету месячной зарплаты за этот месяц.";
+                }
+            case WAITING_FOR_ADD_MONTH_SALARY:
                 botState=State.ON_WORK;
-                return "Вы уже ввели доход за сегодня.";
-            }
-        }
-        if(botState==State.WAITING_FOR_MONTH_SALARY){
-            try {
-                botState=State.ON_WORK;
-                String[] commandParts = command.split("-");
-                int month = Integer.parseInt(commandParts[0]);
-                int year = Integer.parseInt(commandParts[1]);
-                return "Ваша зарплата за месяц: " + monthSalaryRepository.getMonthSalaryByChatId(chatId, year, month) + " руб.";
-            }
-            catch (Exception ex){
-                botState=State.ON_WORK;
-                return "Проверьте данные, у вас нету месячной зарплаты за этот месяц.";
-            }
+                if (command.equals("Да")) {
+                    if (today.getDayOfMonth() >= 25) {
+                        double advance = advanceRepository.getAdvanceByChatId(chatId, today.getYear(), today.getMonthValue());
+                        double salary = salaryRepository.getSalaryByChatId(chatId, today.getYear(), today.getMonthValue());
+                        addMonthSalary(chatId, advance + salary, today.getMonthValue(), today.getYear());
+                        return "Ваша месячная запралата за этот месяц составила:" + monthSalaryRepository.getMonthSalaryByChatId(chatId, today.getYear(), today.getMonthValue()) + " руб.";
+                    }
+                }
+                if (command.equals("Нет")) {
+                    return "Спасибо за ответ";
+                }
 
-
+                else {
+                    botState = State.WAITING_FOR_ADD_MONTH_SALARY;
+                    return "Вы ввели некорректный ответ.\nПожалуйста введите:Да/Нет";
+                }
 
         }
 
