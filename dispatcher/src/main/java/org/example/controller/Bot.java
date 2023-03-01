@@ -135,7 +135,7 @@ public Bot(BotConfig CONFIG){
                                 botState = State.WAITING_FOR_ADD_MONTH_SALARY;
                                 return "Это ваш последний доход за этот месяц?\nВведите:Да/Нет";
                             }
-                            else{
+                            if(today.getDayofMonth() <=24){
                                 return "Доход "+ (income) +" руб. был успешно добавлен";
                             }
                         }
