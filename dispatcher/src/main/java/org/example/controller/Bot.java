@@ -131,13 +131,13 @@ public Bot(BotConfig CONFIG){
                             addIncome(chatId, income, today);
                             addSalary(chatId, income, today);
                             sendMessage(chatId, "Сумма " + (income) + " руб. была зачислена в вашу зарплату.");
-                            if (today.getDayOfMonth() >= 25) {
-                                botState = State.WAITING_FOR_ADD_MONTH_SALARY;
-                                return "Это ваш последний доход за этот месяц?\nВведите:Да/Нет";
-                            }
-                            if(today.getDayofMonth() <=24){
-                                return "Доход "+ (income) +" руб. был успешно добавлен";
-                            }
+                        }
+                        if (today.getDayOfMonth() >= 25) {
+                            botState = State.WAITING_FOR_ADD_MONTH_SALARY;
+                            return "Это ваш последний доход за этот месяц?\nВведите:Да/Нет";
+                        }
+                        else {
+                            return "Доход " + (income) + " руб. был успешно добавлен";
                         }
                     } catch (NumberFormatException e) {
                         SendMessage errorMessage = new SendMessage();
