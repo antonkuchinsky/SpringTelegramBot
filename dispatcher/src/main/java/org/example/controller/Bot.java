@@ -140,10 +140,7 @@ public Bot(BotConfig CONFIG){
                             return "Доход " + (income) + " руб. был успешно добавлен";
                         }
                     } catch (NumberFormatException e) {
-                        SendMessage errorMessage = new SendMessage();
-                        errorMessage.setChatId(chatId);
-                        errorMessage.setText("Неверный формат команды. Пожалуйста введите число.");
-                        execute(errorMessage);
+                        return "Неверный формат команды. Пожалуйста введите число.";
                     }
                 }
                 else{
