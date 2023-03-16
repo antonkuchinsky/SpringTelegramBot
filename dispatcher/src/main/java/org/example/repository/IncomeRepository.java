@@ -16,7 +16,7 @@ import java.util.List;
 public interface IncomeRepository extends JpaRepository<Income,Long> {
     List<Income> findByChatIdAndDate(long chatId, LocalDate date);
 
-    @Query("SELECT i.income FROM income i WHERE i.chatId = :chatId AND i.date = :date")
+    @Query("SELECT ROUND(i.income,2) FROM income i WHERE i.chatId = :chatId AND i.date = :date")
     double getIncomeByChatId (@Param("chatId") long chatId, @Param("date") LocalDate date);
     @Modifying
     @Transactional
