@@ -13,7 +13,7 @@ import java.time.LocalDate;
  */
 
 public interface AdvanceRepository extends JpaRepository<Advance,Long> {
-    @Query("SELECT SUM(a.advance) FROM advance a WHERE a.chatId = :chatId AND YEAR(a.date) = :year AND MONTH(a.date) = :month")
+    @Query("SELECT ROUND(SUM(a.advance),2) FROM advance a WHERE a.chatId = :chatId AND YEAR(a.date) = :year AND MONTH(a.date) = :month")
     double getAdvanceByChatId (@Param("chatId") long chatId, @Param("year") int year, @Param("month") int month);
     @Modifying
     @Transactional
