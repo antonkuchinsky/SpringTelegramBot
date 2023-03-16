@@ -13,7 +13,7 @@ import java.time.LocalDate;
  */
 
 public interface SalaryRepository extends JpaRepository<Salary,Long> {
-    @Query("SELECT SUM(s.salary) FROM salary s WHERE s.chatId = :chatId AND YEAR(s.date) = :year AND MONTH(s.date) = :month")
+    @Query("SELECT ROUND(SUM(s.salary),2) FROM salary s WHERE s.chatId = :chatId AND YEAR(s.date) = :year AND MONTH(s.date) = :month")
     double getSalaryByChatId( @Param("chatId") long chatId, @Param("year") int year, @Param("month") int month);
     @Modifying
     @Transactional
