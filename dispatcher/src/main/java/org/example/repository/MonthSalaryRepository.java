@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
  */
 
 public interface MonthSalaryRepository extends JpaRepository<MonthSalary,Long> {
-    @Query("SELECT m.monthSalary FROM MonthSalary m WHERE m.chatId = :chatId AND m.year = :year AND m.month = :month")
+    @Query("SELECT ROUND(m.monthSalary,2) FROM MonthSalary m WHERE m.chatId = :chatId AND m.year = :year AND m.month = :month")
     double getMonthSalaryByChatId (@Param("chatId") long chatId, @Param("year") int year, @Param("month") int month);
 }
