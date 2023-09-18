@@ -1,0 +1,23 @@
+services:
+  telegram_bot_db:
+    image: mysql:8.1.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      - telegram_bot_db:/data/telegram_bot_db
+      - ./create_telegram_bot_database_name.sql:/docker-entrypoint-initdb.d/create_telegram_bot_database_name.sql
+    restart: always
+
+  dispatcher:
+      container_name: dispatcher
+      build:
+        context: ./dispatcher
+        dockerfile: Dockerfile
+      ports:
+        - "8084:8084"
+
+volumes:
+  telegram_bot_db:

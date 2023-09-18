@@ -1,6 +1,6 @@
 package org.example.config;
 
-import org.example.controller.Bot;
+import org.example.controller.BotController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -15,11 +15,11 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 public class BotInitializer {
     @Autowired
-    Bot bot;
+    BotController botController;
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi=new TelegramBotsApi(DefaultBotSession.class);
-        telegramBotsApi.registerBot(bot);
+        telegramBotsApi.registerBot(botController);
 
     }
 }
